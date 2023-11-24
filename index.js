@@ -6,8 +6,8 @@ const cors = require('cors');
 const app = express();
 const port = 3005;
 
-
 const Productdata = require('./models/productdata')
+const Userdata = require('./models/User')
 
 // MongoDB Connection
 mongoose.set('strictQuery', false);
@@ -28,13 +28,42 @@ const connectDB = async () => {
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-
 app.use(cors({ origin: '*' }));
 
 // Simple get request
 app.get('/', (req, res) => {
   res.send('Hello Ecom Admin');
 });
+
+// Registerd Uaer Data
+app.post('/userdata', async (req, res) => {
+  const {username, usernumber, userpassword, useraddress, userorder} = req.body;
+
+  try{
+    const newData = new Userdata({
+      username,
+      usernumber,
+      userpassword,
+      useraddress,
+      userorder
+    })
+    await newData.save()
+    console.log("User Data Saved")
+    res.status(200).json({message:'User Data saved'})
+  }catch(err){
+    console.error("Error Saving User Data", err)
+  }
+})
+
+app.get('/allusers', async (req, res) => {
+try{
+  const allusers = await Userdata.find()
+  res.status(200).json(allusers)
+}catch(err){
+  console.error('Error Fetching Data', err)
+  res.status(500).json({message:"Internam Server Error"})
+}
+})
 
 // Adding Products to the Site
 app.post('/addproduct', async (req, res) => {
@@ -58,7 +87,6 @@ app.post('/addproduct', async (req, res) => {
 });
 
 //To Get All Data
-
 app.get('/allproducts', async (req, res) => {
   try {
     const allProducts = await Productdata.find();
@@ -69,10 +97,7 @@ app.get('/allproducts', async (req, res) => {
   }
 });
 
-
 //Delete The Product
-
-
 app.delete('/deleteproduct/:productId', async (req, res) => {
   const productId = req.params.productId;
 
@@ -82,14 +107,12 @@ app.delete('/deleteproduct/:productId', async (req, res) => {
     if (!deletedProduct) {
       return res.status(404).json({ error: 'Product not found' });
     }
-
     res.status(200).json({ message: 'Product deleted successfully' });
   } catch (err) {
     console.error('Error Deleting Product', err);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
 
 // Start the Server
 connectDB().then(() => {
