@@ -35,25 +35,49 @@ app.get('/', (req, res) => {
   res.send('Hello Ecom Admin');
 });
 
+
 // Registerd Uaer Data
 app.post('/userdata', async (req, res) => {
-  const {username, usernumber, userpassword, useraddress, userorder} = req.body;
+  const { username, usernumber, userpassword, useraddress, userorder } = req.body;
 
-  try{
-    const newData = new Userdata({
-      username,
-      usernumber,
-      userpassword,
-      useraddress,
-      userorder
-    })
-    await newData.save()
-    console.log("User Data Saved")
-    res.status(200).json({message:'User Data saved'})
-  }catch(err){
-    console.error("Error Saving User Data", err)
+  try {
+    // Check if the user already exists based on username and mobile number
+    const existingUser = await Userdata.findOne({ username, usernumber });
+
+    if (existingUser) {
+      // If the user exists, update the address
+      existingUser.useraddress = useraddress;
+      await existingUser.save();
+      console.log("User Address Updated");
+      res.status(200).json({ message: 'User Address Updated' });
+    } else {
+      // If the user doesn't exist, create a new entry
+      const newData = new Userdata({
+        username,
+        usernumber,
+        userpassword,
+        useraddress,
+        userorder
+      });
+      await newData.save();
+      console.log("New User Data Saved");
+      res.status(200).json({ message: 'New User Data saved' });
+    }
+  } catch (err) {
+    console.error("Error Saving/Updating User Data", err);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
-})
+});
+
+app.get('/userdata', async (req, res) => {
+  try{
+    const allusersdata = await Userdata.find()
+    res.status(200).json(allusersdata)
+  }catch(err){
+    console.error('Error Fetching Data', err)
+    res.status(500).json({message:"Internam Server Error"})
+  }
+  })
 
 app.get('/allusers', async (req, res) => {
 try{
@@ -63,7 +87,7 @@ try{
   console.error('Error Fetching Data', err)
   res.status(500).json({message:"Internam Server Error"})
 }
-})
+});
 
 // Adding Products to the Site
 app.post('/addproduct', async (req, res) => {
