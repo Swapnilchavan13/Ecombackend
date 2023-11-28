@@ -35,6 +35,7 @@ app.get("/", (req, res) => {
   res.send("Hello Ecom Admin");
 });
 
+const existingUser = await Userdata.findOne({ username, usernumber });
 // Registerd Uaer Data
 app.post("/userdata", async (req, res) => {
   const { username, usernumber, userpassword, useraddress, userorder } =
@@ -42,8 +43,6 @@ app.post("/userdata", async (req, res) => {
 
   try {
     // Check if the user already exists based on username and mobile number
-    const existingUser = await Userdata.findOne({ username, usernumber });
-
     if (existingUser) {
       // If the user exists, update the address
       existingUser.useraddress = useraddress;
