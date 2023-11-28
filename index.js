@@ -63,6 +63,7 @@ app.post("/userdata", async (req, res) => {
       console.log("New User Data Saved");
       res.status(200).json({ message: "New User Data saved" });
     }
+    // Update User Address Data
   } catch (err) {
     console.error("Error Saving/Updating User Data", err);
     res.status(500).json({ error: "Internal Server Error" });
@@ -70,8 +71,6 @@ app.post("/userdata", async (req, res) => {
 });
 
 //Patch request
-
-// Update User Address Data
 app.patch("/userdata/:id", async (req, res) => {
   const userId = req.params.id;
   const { useraddress } = req.body;
@@ -83,11 +82,9 @@ app.patch("/userdata/:id", async (req, res) => {
     if (!existingUser) {
       return res.status(404).json({ error: "User not found" });
     }
-
     // Update the user's address
     existingUser.useraddress = useraddress;
     await existingUser.save();
-
     console.log("User Address Updated");
     res.status(200).json({ message: "User Address Updated" });
   } catch (err) {
@@ -101,34 +98,6 @@ app.get("/userdata", async (req, res) => {
   try {
     const userData = await Userdata.find();
     res.json(userData);
-  } catch (error) {
-    console.error("Error fetching user data:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-app.get("/userdata", async (req, res) => {
-  const { username, usernumber } = req.query;
-
-  try {
-    let query = {};
-
-    if (username) {
-      query.username = username;
-    }
-
-    if (usernumber) {
-      query.usernumber = usernumber;
-    }
-
-    const userData = await Userdata.find(query);
-
-    // Check if both username and usernumber are provided
-    if (username && usernumber && userData.length === 1) {
-      res.json(userData[0]); // Return the single matching user
-    } else {
-      res.status(404).json({ error: "User not found" });
-    }
   } catch (error) {
     console.error("Error fetching user data:", error);
     res.status(500).json({ error: "Internal Server Error" });
