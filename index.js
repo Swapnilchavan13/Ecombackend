@@ -69,15 +69,69 @@ app.post('/userdata', async (req, res) => {
   }
 });
 
-app.get('/userdata', async (req, res) => {
-  try{
-    const allusersdata = await Userdata.find()
-    res.status(200).json(allusersdata)
-  }catch(err){
-    console.error('Error Fetching Data', err)
-    res.status(500).json({message:"Internam Server Error"})
+
+//Patch request 
+
+// Update User Address Data
+app.patch('/userdata/:id', async (req, res) => {
+  const userId = req.params.id;
+  const { useraddress } = req.body;
+
+  try {
+    // Find the user by ID
+    const existingUser = await Userdata.findById(userId);
+
+    if (!existingUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Update the user's address
+    existingUser.useraddress = useraddress;
+    await existingUser.save();
+
+    console.log("User Address Updated");
+    res.status(200).json({ message: 'User Address Updated' });
+  } catch (err) {
+    console.error("Error Updating User Address", err);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
-  })
+});
+
+
+// Assuming your existing code to fetch all user data looks like this
+app.get('/userdata', async (req, res) => {
+  try {
+    const userData = await Userdata.find();
+    res.json(userData);
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Modify the endpoint to accept query parameters for username and usernumber
+app.get('/userdata', async (req, res) => {
+  const { username, usernumber } = req.query;
+
+  try {
+    let query = {};
+
+    if (username) {
+      query.username = username;
+    }
+
+    if (usernumber) {
+      query.usernumber = usernumber;
+    }
+
+    const userData = await Userdata.find(query);
+    res.json(userData);
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 app.get('/allusers', async (req, res) => {
 try{
