@@ -197,6 +197,7 @@ app.post("/createorder", async (req, res) => {
   }
 });
 
+
 // Get all orders
 app.get("/allorders", async (req, res) => {
   try {
@@ -205,6 +206,26 @@ app.get("/allorders", async (req, res) => {
     res.status(200).json(allOrders);
   } catch (err) {
     console.error("Error fetching orders", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+// Delete order by _id
+app.delete("/allorders/:orderId", async (req, res) => {
+  const orderId = req.params.orderId;
+
+  try {
+    // Find the order by _id and delete it
+    const deletedOrder = await Order.findByIdAndDelete(orderId);
+
+    if (!deletedOrder) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    res.status(200).json({ message: "Order deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting order", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
