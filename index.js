@@ -8,6 +8,7 @@ const port = 3005;
 
 const Productdata = require("./models/productdata");
 const Userdata = require("./models/User");
+const Order = require("./models/Order")
 
 // MongoDB Connection
 mongoose.set("strictQuery", false);
@@ -166,6 +167,44 @@ app.delete("/deleteproduct/:productId", async (req, res) => {
     res.status(200).json({ message: "Product deleted successfully" });
   } catch (err) {
     console.error("Error Deleting Product", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+// User orders
+app.post("/createorder", async (req, res) => {
+  const { userId, products, address, paymentMethod, total } = req.body;
+
+  try {
+    // Create a new order using the Order model
+    const newOrder = new Order({
+      userId,
+      products,
+      address,
+      paymentMethod,
+      total,
+    });
+
+    // Save the new order to the database
+    await newOrder.save();
+
+    console.log("Order created successfully");
+    res.status(201).json({ message: "Order created successfully" });
+  } catch (err) {
+    console.error("Error creating order", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Get all orders
+app.get("/allorders", async (req, res) => {
+  try {
+    // Fetch all orders from the database
+    const allOrders = await Order.find();
+    res.status(200).json(allOrders);
+  } catch (err) {
+    console.error("Error fetching orders", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
