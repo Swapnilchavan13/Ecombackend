@@ -8,7 +8,7 @@ const port = 3005;
 
 const Productdata = require("./models/productdata");
 const Userdata = require("./models/User");
-const Order = require("./models/Order")
+const Order = require("./models/Order");
 
 // MongoDB Connection
 mongoose.set("strictQuery", false);
@@ -207,7 +207,6 @@ app.get("/allorders", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
 
 // Delete order by _id
 app.delete("/allorders/:orderId", async (req, res) => {
