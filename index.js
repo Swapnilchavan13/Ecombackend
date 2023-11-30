@@ -171,7 +171,6 @@ app.delete("/deleteproduct/:productId", async (req, res) => {
   }
 });
 
-
 // User orders
 app.post("/createorder", async (req, res) => {
   const { userId, products, address, paymentMethod, total } = req.body;
@@ -196,7 +195,6 @@ app.post("/createorder", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
 
 // Get all orders
 app.get("/allorders", async (req, res) => {
