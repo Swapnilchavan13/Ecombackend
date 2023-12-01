@@ -173,7 +173,8 @@ app.delete("/deleteproduct/:productId", async (req, res) => {
 
 // User orders
 app.post("/createorder", async (req, res) => {
-  const { userId, orderdate, products, address, paymentMethod, total, status } = req.body;
+  const { userId, orderdate, products, address, paymentMethod, total, status } =
+    req.body;
 
   try {
     // Create a new order using the Order model
@@ -230,7 +231,7 @@ app.delete("/allorders/:orderId", async (req, res) => {
 });
 
 // Get single order by ID
-app.get('/allorders/:orderId', async (req, res) => {
+app.get("/allorders/:orderId", async (req, res) => {
   const orderId = req.params.orderId;
 
   try {
@@ -238,17 +239,16 @@ app.get('/allorders/:orderId', async (req, res) => {
     const order = await Order.findById(orderId);
 
     if (!order) {
-      return res.status(404).json({ error: 'Order not found' });
+      return res.status(404).json({ error: "Order not found" });
     }
 
     // Return the order details
     res.status(200).json(order);
   } catch (error) {
-    console.error('Error fetching order details:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error("Error fetching order details:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
 
 // Patch request to update order status
 app.patch("/updateorderstatus/:orderId", async (req, res) => {
@@ -274,7 +274,6 @@ app.patch("/updateorderstatus/:orderId", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
 
 // Start the Server
 connectDB().then(() => {
