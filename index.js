@@ -173,16 +173,18 @@ app.delete("/deleteproduct/:productId", async (req, res) => {
 
 // User orders
 app.post("/createorder", async (req, res) => {
-  const { userId, products, address, paymentMethod, total } = req.body;
+  const { userId, orderdate, products, address, paymentMethod, total, status } = req.body;
 
   try {
     // Create a new order using the Order model
     const newOrder = new Order({
       userId,
       products,
+      orderdate,
       address,
       paymentMethod,
       total,
+      status,
     });
 
     // Save the new order to the database
@@ -226,6 +228,53 @@ app.delete("/allorders/:orderId", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+// Get single order by ID
+app.get('/allorders/:orderId', async (req, res) => {
+  const orderId = req.params.orderId;
+
+  try {
+    // Find the order by ID
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    // Return the order details
+    res.status(200).json(order);
+  } catch (error) {
+    console.error('Error fetching order details:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+// Patch request to update order status
+app.patch("/updateorderstatus/:orderId", async (req, res) => {
+  const orderId = req.params.orderId;
+  const { status } = req.body;
+
+  try {
+    // Find the order by ID
+    const existingOrder = await Order.findById(orderId);
+
+    if (!existingOrder) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    // Update the order's status
+    existingOrder.status = status;
+    await existingOrder.save();
+
+    console.log("Order Status Updated");
+    res.status(200).json({ message: "Order Status Updated" });
+  } catch (err) {
+    console.error("Error Updating Order Status", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 
 // Start the Server
 connectDB().then(() => {
