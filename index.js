@@ -47,6 +47,7 @@ app.post("/userdata", async (req, res) => {
 
     if (existingUser) {
       // If the user exists, update the address
+      userorder,
       existingUser.useraddress = useraddress;
       await existingUser.save();
       console.log("User Address Updated");
@@ -58,7 +59,6 @@ app.post("/userdata", async (req, res) => {
         usernumber,
         userpassword,
         useraddress,
-        userorder,
       });
       await newData.save();
       console.log("New User Data Saved");
