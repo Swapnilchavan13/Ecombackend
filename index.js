@@ -237,9 +237,11 @@ app.get("/allorders/:orderId", async (req, res) => {
     // Find the order by ID
     const order = await Order.findById(orderId);
 
+
     if (!order) {
       return res.status(404).json({ error: "Order not found" });
     }
+    
 
     // Return the order details
     res.status(200).json(order);
