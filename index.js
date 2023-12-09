@@ -153,6 +153,8 @@ app.get("/allproducts", async (req, res) => {
   }
 });
 
+
+
 //Delete The Product
 app.delete("/deleteproduct/:productId", async (req, res) => {
   const productId = req.params.productId;
@@ -232,18 +234,16 @@ app.delete("/allorders/:orderId", async (req, res) => {
 // Get single order by ID
 app.get("/allorders/:orderId", async (req, res) => {
   const orderId = req.params.orderId;
+  // Return the order details
 
   try {
     // Find the order by ID
     const order = await Order.findById(orderId);
 
-
     if (!order) {
       return res.status(404).json({ error: "Order not found" });
     }
     
-
-    // Return the order details
     res.status(200).json(order);
   } catch (error) {
     console.error("Error fetching order details:", error);
