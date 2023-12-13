@@ -4,7 +4,7 @@ require("dotenv").config();
 const mongoose = require("mongoose");
 const cors = require("cors");
 const app = express();
-const port = 3008;
+const port = 3005;
 
 const Productdata = require("./models/productdata");
 const Userdata = require("./models/User");
@@ -136,6 +136,7 @@ app.post("/addproduct", async (req, res) => {
     });
     await newData.save();
     console.log("Product Data Saved.");
+    res.status(200).json({ message: "Product Data Saved" });
   } catch (err) {
     console.error("Error Saving Data", err);
   }
@@ -152,7 +153,6 @@ app.get("/allproducts", async (req, res) => {
   }
 });
 
-    res.status(200).json({ message: "Product Data Saved" });
 //Delete The Product
 app.delete("/deleteproduct/:productId", async (req, res) => {
   const productId = req.params.productId;
