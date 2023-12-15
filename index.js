@@ -9,6 +9,8 @@ const port = 3008;
 const Productdata = require("./models/productdata");
 const Userdata = require("./models/User");
 const Order = require("./models/Order");
+const Merchant = require("./models/Merchant");
+const Merchantdata = require("./models/Merchant");
 
 // MongoDB Connection
 mongoose.set("strictQuery", false);
@@ -273,6 +275,65 @@ app.patch("/updateorderstatus/:orderId", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+
+///Merchnt data///
+
+app.post("/merchantdata", async (req, res) => {
+  const { businessName ,businessType, loaction, businessAddress, businessPhone,businessEmail,ownerName,ownerPhone,password} =
+req.body;
+
+try{
+
+  const newMerchant = new Merchantdata({
+  businessName,
+  businessType,
+  loaction,
+  businessAddress,
+  businessPhone,
+  businessEmail,
+  ownerName,
+  ownerPhone,
+  password
+  });
+
+  await newMerchant.save();
+
+  console.log("New Merchant Data saved");
+  res.status(200).json({message: "New Merchant Data Saved"})
+
+} catch (err) {
+    console.error("Error creating order", err);
+    res.status(500).json({ error: "Internal Server Error" });
+}
+});
+
+app.get("/allmerchants", async (req, res) => {
+  try {
+    const allMerchants = await Merchantdata.find();
+    res.status(200).json(allMerchants);
+  } catch (err) {
+    console.log("error fetching merchant", err);
+    res.status(500).json({error: "Internal Server Error"})
+  }
+});
+
+app.delete("allmerchants/:merchantId", async (req, res) => {
+  const merchantId = req.params.merchantId;
+
+  try {
+    const deletemerchant = await Merchantdata.findByIdAndDelete(merchantId);
+
+    if(!deletemerchant){
+      return res.status(404).json({error: "Merchant Not Found"});
+    }
+
+    res.status(200).json({message: "Merchant Deleted Successfully"})
+  } catch(err){
+    console.error("Error deleting merchant", err);
+    res.status(500).json({error: "Internal Sever Error"});
+  }
+})
 
 // Start the Server
 connectDB().then(() => {
