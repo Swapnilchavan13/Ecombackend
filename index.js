@@ -276,37 +276,58 @@ app.patch("/updateorderstatus/:orderId", async (req, res) => {
   }
 });
 
-
 ///Merchnt data///
-
 app.post("/merchantdata", async (req, res) => {
-  const { businessName ,businessType, loaction, businessAddress, businessPhone,businessEmail,ownerName,ownerPhone,password} =
-req.body;
+  const {
+    businessName,
+    businessType,
+    loaction,
+    businessAddress,
+    businessPhone,
+    businessEmail,
+    ownerName,
+    ownerPhone,
+    password
+  } = req.body;
 
-try{
+  try {
+    // Check if the email or phone number already exists in the database
+    const existingMerchant = await Merchantdata.findOne({
+      $or: [
+        { businessEmail: businessEmail },
+        { businessPhone: businessPhone }
+      ]
+    });
 
-  const newMerchant = new Merchantdata({
-  businessName,
-  businessType,
-  loaction,
-  businessAddress,
-  businessPhone,
-  businessEmail,
-  ownerName,
-  ownerPhone,
-  password
-  });
+    if (existingMerchant) {
+      // If email or phone number already exists, return an error response
+      return res.status(400).json({ success: false, errorMessage: "Email or phone number already in use" });
+    }
 
-  await newMerchant.save();
+    // If email and phone number are not already in use, create a new merchant
+    const newMerchant = new Merchantdata({
+      businessName,
+      businessType,
+      loaction,
+      businessAddress,
+      businessPhone,
+      businessEmail,
+      ownerName,
+      ownerPhone,
+      password
+    });
 
-  console.log("New Merchant Data saved");
-  res.status(200).json({message: "New Merchant Data Saved"})
+    // Save the new merchant to the database
+    await newMerchant.save();
 
-} catch (err) {
+    console.log("New Merchant Data saved");
+    res.status(200).json({ success: true, message: "New Merchant Data Saved" });
+  } catch (err) {
     console.error("Error creating order", err);
-    res.status(500).json({ error: "Internal Server Error" });
-}
+    res.status(500).json({ success: false, errorMessage: "Internal Server Error" });
+  }
 });
+
 
 app.get("/allmerchants", async (req, res) => {
   try {
