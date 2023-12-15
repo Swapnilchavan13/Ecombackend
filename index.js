@@ -356,6 +356,27 @@ app.delete("allmerchants/:merchantId", async (req, res) => {
   }
 })
 
+
+// Get single Merchant by ID
+app.get("/allmerchants/:merchantId", async (req, res) => {
+  const merchantId = req.params.merchantId;
+  // Return the Merchant details
+
+  try {
+    // Find the Merchant by ID
+    const merchant = await Merchantdata.findById(merchantId);
+
+    if (!merchant) {
+      return res.status(404).json({ error: "Merchant not found" });
+    }
+    
+    res.status(200).json(merchant);
+  } catch (error) {
+    console.error("Error fetching merchant details:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 // Start the Server
 connectDB().then(() => {
   app.listen(port, () => {
