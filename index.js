@@ -299,11 +299,9 @@ app.post("/merchantdata", async (req, res) => {
     });
 
     if (existingMerchant) {
-      // If email or phone number already exists, return an error response
       return res.status(400).json({ success: false, errorMessage: "Email or phone number already in use" });
     }
 
-    // If email and phone number are not already in use, create a new merchant
     const newMerchant = new Merchantdata({
       businessName,
       businessType,
