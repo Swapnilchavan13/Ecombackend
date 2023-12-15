@@ -9,7 +9,6 @@ const port = 3008;
 const Productdata = require("./models/productdata");
 const Userdata = require("./models/User");
 const Order = require("./models/Order");
-const Merchant = require("./models/Merchant");
 const Merchantdata = require("./models/Merchant");
 
 // MongoDB Connection
@@ -339,22 +338,23 @@ app.get("/allmerchants", async (req, res) => {
   }
 });
 
-app.delete("allmerchants/:merchantId", async (req, res) => {
-  const merchantId = req.params.merchantId;
+// New route for handling merchant deletion
+app.delete('/allmerchants/:id', async (req, res) => {
+  const merchantId = req.params.id;
 
   try {
-    const deletemerchant = await Merchantdata.findByIdAndDelete(merchantId);
+    const deletedMerchant = await Merchantdata.findByIdAndDelete(merchantId);
 
-    if(!deletemerchant){
-      return res.status(404).json({error: "Merchant Not Found"});
+    if (deletedMerchant) {
+      res.json({ success: true, message: 'Merchant deleted successfully' });
+    } else {
+      res.status(404).json({ success: false, message: 'Merchant not found' });
     }
-
-    res.status(200).json({message: "Merchant Deleted Successfully"})
-  } catch(err){
-    console.error("Error deleting merchant", err);
-    res.status(500).json({error: "Internal Sever Error"});
+  } catch (error) {
+    console.error('Error deleting merchant:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
-})
+});
 
 
 // Get single Merchant by ID
