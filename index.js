@@ -118,6 +118,7 @@ app.get("/allusers", async (req, res) => {
 // Adding Products to the Site
 app.post("/addproduct", async (req, res) => {
   const {
+    mercahntid,
     producttype,
     productname,
     productimage,
@@ -128,6 +129,7 @@ app.post("/addproduct", async (req, res) => {
 
   try {
     const newData = new Productdata({
+      mercahntid,
       producttype,
       productname,
       productimage,
@@ -153,6 +155,31 @@ app.get("/allproducts", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+    // To Get Data for a Specific Merchant
+app.get("/allproducts/:merchantid", async (req, res) => {
+  const merchantId = req.params.merchantid;
+
+  try {
+    if (!merchantId) {
+      // If merchantId is not provided in the params, return an error
+      return res.status(400).json({ error: "Merchant ID is required in the URL parameters" });
+    }
+
+    // Find products only for the specified merchant ID
+    const merchantProducts = await Productdata.find({ mercahntid: merchantId });
+
+    if (merchantProducts.length === 0) {
+      return res.status(404).json({ message: "No products found for the specified merchant ID" });
+    }
+
+    res.status(200).json(merchantProducts);
+  } catch (err) {
+    console.error("Error Fetching Data", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+  
 
 //Delete The Product
 app.delete("/deleteproduct/:productId", async (req, res) => {
@@ -222,7 +249,6 @@ app.delete("/allorders/:orderId", async (req, res) => {
     if (!deletedOrder) {
       return res.status(404).json({ error: "Order not found" });
     }
-
     res.status(200).json({ message: "Order deleted successfully" });
   } catch (err) {
     console.error("Error deleting order", err);
