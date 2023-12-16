@@ -118,7 +118,7 @@ app.get("/allusers", async (req, res) => {
 // Adding Products to the Site
 app.post("/addproduct", async (req, res) => {
   const {
-    mercahntid,
+    merchantid,
     producttype,
     productname,
     productimage,
@@ -129,7 +129,7 @@ app.post("/addproduct", async (req, res) => {
 
   try {
     const newData = new Productdata({
-      mercahntid,
+      merchantid,
       producttype,
       productname,
       productimage,
@@ -167,7 +167,7 @@ app.get("/allproducts/:merchantid", async (req, res) => {
     }
 
     // Find products only for the specified merchant ID
-    const merchantProducts = await Productdata.find({ mercahntid: merchantId });
+    const merchantProducts = await Productdata.find({ merchantid: merchantId });
 
     if (merchantProducts.length === 0) {
       return res.status(404).json({ message: "No products found for the specified merchant ID" });
