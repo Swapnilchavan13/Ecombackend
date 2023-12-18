@@ -454,14 +454,12 @@ app.get("/allmerchants/:merchantId", async (req, res) => {
     if (!merchant) {
       return res.status(404).json({ error: "Merchant not found" });
     }
-    
     res.status(200).json(merchant);
   } catch (error) {
     console.error("Error fetching merchant details:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
 
 
 // Start the Server
