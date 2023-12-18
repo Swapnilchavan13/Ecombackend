@@ -179,7 +179,6 @@ app.get("/allproducts/:merchantid", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-  
 
 //Delete The Product
 app.delete("/deleteproduct/:productId", async (req, res) => {
@@ -400,6 +399,70 @@ app.get("/allmerchants/:merchantId", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+// To Get Data for a Specific Merchant
+app.get("/allproducts/:merchantid", async (req, res) => {
+  const merchantId = req.params.merchantid;
+
+  try {
+    if (!merchantId) {
+      // If merchantId is not provided in the params, return an error
+      return res.status(400).json({ error: "Merchant ID is required in the URL parameters" });
+    }
+
+    // Find products only for the specified merchant ID
+    const merchantProducts = await Productdata.find({ merchantid: merchantId });
+
+    if (merchantProducts.length === 0) {
+      return res.status(404).json({ message: "No products found for the specified merchant ID" });
+    }
+
+    res.status(200).json(merchantProducts);
+  } catch (err) {
+    console.error("Error Fetching Data", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// New route for handling merchant deletion
+app.delete('/allmerchants/:id', async (req, res) => {
+  const merchantId = req.params.id;
+
+  try {
+    const deletedMerchant = await Merchantdata.findByIdAndDelete(merchantId);
+
+    if (deletedMerchant) {
+      res.json({ success: true, message: 'Merchant deleted successfully' });
+    } else {
+      res.status(404).json({ success: false, message: 'Merchant not found' });
+    }
+  } catch (error) {
+    console.error('Error deleting merchant:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Get single Merchant by ID
+app.get("/allmerchants/:merchantId", async (req, res) => {
+  const merchantId = req.params.merchantId;
+  // Return the Merchant details
+
+  try {
+    // Find the Merchant by ID
+    const merchant = await Merchantdata.findById(merchantId);
+
+    if (!merchant) {
+      return res.status(404).json({ error: "Merchant not found" });
+    }
+    
+    res.status(200).json(merchant);
+  } catch (error) {
+    console.error("Error fetching merchant details:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
 
 // Start the Server
 connectDB().then(() => {
