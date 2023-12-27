@@ -78,7 +78,6 @@ app.patch("/userdata/:id", async (req, res) => {
 
   try {
     // Find the user by ID
-
     const existingUser = await Userdata.findById(userId);
     if (!existingUser) {
       return res.status(404).json({ error: "User not found" });
@@ -125,6 +124,18 @@ app.post("/addproduct", async (req, res) => {
     productprice,
     productdiscount,
     productquantity,
+    productdescription,
+    productdeliveryDate,
+    productoffer,
+    productblock,
+    brand,
+    storage,
+    operatingSystem,
+    cellularTechnology,
+    size,
+    color,
+    material
+    
   } = req.body;
 
   try {
@@ -136,6 +147,17 @@ app.post("/addproduct", async (req, res) => {
       productprice,
       productdiscount,
       productquantity,
+      productdescription,
+      productdeliveryDate,
+      productoffer,
+      productblock,
+      brand,
+      storage,
+      operatingSystem,
+      cellularTechnology,
+      size,
+      color,
+      material
     });
     await newData.save();
     console.log("Product Data Saved.");
