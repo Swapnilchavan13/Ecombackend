@@ -12,6 +12,15 @@ const dataSchema = new mongoose.Schema({
   productdeliveryDate: Number,
   productoffer: String,
   productblock: Boolean,
+
+
+  image_one: String,
+  image_two: String,
+  image_three: String,
+  image_four: String,
+  image_five: String,
+  video_one: String,
+  video_two: String,
   // Additional fields for specific product types
   brand: String, // for Electronics
   storage: String, // for Electronics
