@@ -152,7 +152,6 @@ app.post("/addproduct", async (req, res) => {
       producttype,
       productname,
       productimage,
-      productprice,
       productdiscount,
       productquantity,
       productdescription,
@@ -162,6 +161,7 @@ app.post("/addproduct", async (req, res) => {
       image_one,
     image_two,
   image_three,
+      productprice,
   image_four,
   image_five,
   video_one,
@@ -507,6 +507,36 @@ app.get("/allmerchants/:merchantId", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+
+
+
+// Endpoint to update the 'productblock' field of a product
+app.patch("/updateproductblock/:productId", async (req, res) => {
+  const productId = req.params.productId;
+  const { productblock } = req.body;
+
+  try {
+    // Find the product by its ID
+    const product = await Productdata.findById(productId);
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    // Update the 'productblock' field
+    product.productblock = productblock;
+    await product.save();
+
+    console.log("Product block status updated");
+    res.status(200).json({ message: "Product block status updated" });
+  } catch (err) {
+    console.error("Error updating product block status", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+
 
 // Start the Server
 connectDB().then(() => {
