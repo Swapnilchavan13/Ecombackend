@@ -131,19 +131,18 @@ app.post("/addproduct", async (req, res) => {
 
     image_one,
     image_two,
-  image_three,
-  image_four,
-  image_five,
-  video_one,
-  video_two,
+    image_three,
+    image_four,
+    image_five,
+    video_one,
+    video_two,
     brand,
     storage,
     operatingSystem,
     cellularTechnology,
     size,
     color,
-    material
-    
+    material,
   } = req.body;
 
   try {
@@ -159,20 +158,20 @@ app.post("/addproduct", async (req, res) => {
       productoffer,
       productblock,
       image_one,
-    image_two,
-  image_three,
+      image_two,
+      image_three,
       productprice,
-  image_four,
-  image_five,
-  video_one,
-  video_two,
+      image_four,
+      image_five,
+      video_one,
+      video_two,
       brand,
       storage,
       operatingSystem,
       cellularTechnology,
       size,
       color,
-      material
+      material,
     });
     await newData.save();
     console.log("Product Data Saved.");
@@ -362,12 +361,10 @@ app.post("/merchantdata", async (req, res) => {
     });
 
     if (existingMerchant) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          errorMessage: "Email or phone number already in use",
-        });
+      return res.status(400).json({
+        success: false,
+        errorMessage: "Email or phone number already in use",
+      });
     }
 
     const newMerchant = new Merchantdata({
@@ -508,9 +505,6 @@ app.get("/allmerchants/:merchantId", async (req, res) => {
   }
 });
 
-
-
-
 // Endpoint to update the 'productblock' field of a product
 app.patch("/updateproductblock/:productId", async (req, res) => {
   const productId = req.params.productId;
@@ -534,9 +528,6 @@ app.patch("/updateproductblock/:productId", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
-
-
 
 // Start the Server
 connectDB().then(() => {
