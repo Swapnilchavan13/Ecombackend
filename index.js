@@ -161,6 +161,7 @@ app.post("/addproduct", async (req, res) => {
       image_two,
       image_three,
       productprice,
+      color,
       image_four,
       image_five,
       video_one,
@@ -170,7 +171,6 @@ app.post("/addproduct", async (req, res) => {
       operatingSystem,
       cellularTechnology,
       size,
-      color,
       material,
     });
     await newData.save();
