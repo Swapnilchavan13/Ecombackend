@@ -3,13 +3,23 @@ const bodyParser = require("body-parser");
 require("dotenv").config();
 const mongoose = require("mongoose");
 const cors = require("cors");
+const http = require('http');
+
+const fs = require('fs'); // Import fs module with promises support
+
+const SendOtp = require('sendotp');
+const request = require('request');
+
 const app = express();
 const port = 3008;
+const multer = require('multer');
+const path = require('path');
 
 const Productdata = require("./models/productdata");
 const Userdata = require("./models/User");
 const Order = require("./models/Order");
 const Merchantdata = require("./models/Merchant");
+const UploadedFilePath = require("./models/Pdf")
 
 // MongoDB Connection
 mongoose.set("strictQuery", false);
@@ -27,10 +37,150 @@ const connectDB = async () => {
   }
 };
 
+const sendOtp = new SendOtp('408994AwofzxcxZjm26625fd0dP1');
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.use(cors({ origin: "*" }));
+
+
+// app.use(express.static(path.join(__dirname, 'client/build')));
+
+/////
+
+const folderPath = 'D:/1Play'; // Change this to the path of your video folder
+
+app.get('/videos', (req, res) => {
+  fs.readdir(folderPath, (err, files) => {
+    if (err) {
+      console.error('Error reading folder:', err);
+      return res.status(500).json({ error: 'Error reading folder' });
+    }
+
+    // Filter out non-video files
+    const videoFiles = files.filter(file => file.endsWith('.mp4'));
+
+    // Generate URLs for the video files
+    const videoURLs = videoFiles.map(file => `${req.protocol}://${req.get('host')}/videos/${encodeURIComponent(file)}`);
+
+    res.json({ videos: videoURLs });
+  });
+});
+
+// Serve video files
+app.get('/videos/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(folderPath, filename);
+
+  // Check if the file exists
+  fs.access(filePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      console.error('Error accessing video file:', err);
+      return res.status(404).json({ error: 'Video file not found' });
+    }
+
+    // Set response headers for streaming video
+    res.setHeader('Content-Type', 'video/mp4');
+
+    // Send the video file
+    res.sendFile(filePath);
+  });
+});
+
+//////
+
+
+app.get('/videoSize', async (req, res) => {
+  try {
+    const filePath = req.query.filePath; // Retrieve file path from query parameter
+    if (!filePath) {
+      return res.status(400).json({ error: 'File path is required.' });
+    }
+
+    const stats = await fs.stat(filePath); // Get file stats including size
+    const sizeInBytes = stats.size; // Get size of the file in bytes
+    const sizeInMB = sizeInBytes; // Convert bytes to megabytes
+    res.json({ size: sizeInMB });
+  } catch (error) {
+    console.error('Error fetching file size:', error);
+    if (error.code === 'ENOENT') {
+      res.status(404).json({ error: 'File not found.' });
+    } else {
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
+});
+
+/////////////////otp////////////////////////
+
+app.post('/send-otp', (req, res) => {
+  const { mobileNumber } = req.body;
+
+  // Replace with your actual email and password
+  const email = 'chavanswapnil822@gmail.com';
+  const password = 'Swapnil@123';
+
+  const authOptions = {
+      method: 'GET',
+      url: 'https://cpaas.messagecentral.com/auth/v1/authentication/token',
+      qs: {
+          country: 'IN',
+          customerId: 'C-E3DE6128CFE5400',
+          email: email,
+          key:password,
+          scope: 'NEW'
+      },
+      headers: {
+          accept: '*/*'
+      }
+  };
+
+  // Make request to generate token
+  request(authOptions, (error, response, body) => {
+      if (error) {
+          console.error('Error generating token:', error);
+          res.status(500).json({ error: 'Internal Server Error' });
+          return;
+      }
+
+      const tokenResponse = JSON.parse(body);
+      const token = tokenResponse.token;
+
+      // Send OTP using the generated token
+      const otpOptions = {
+          method: 'POST',
+          url: 'https://cpaas.messagecentral.com/verification/v2/verification/send',
+          headers: {
+              'authToken': token,
+              'Content-Type': 'application/json'
+          },
+          json: true,
+          body: {
+              countryCode: '91',
+              customerId: 'C-E3DE6128CFE5400',
+              senderId: 'UTOMOB',
+              type: 'SMS',
+              flowType: 'SMS',
+              mobileNumber: mobileNumber,
+              message: 'Your OTP is: 1234' // You can customize the OTP message here
+          }
+      };
+
+    // Make request to send OTP
+request(otpOptions, (error, response, body) => {
+  if (error) {
+      console.error('Error sending OTP:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
+  }
+  console.log('OTP sent successfully:', body); // Log the response body
+  res.json({ message: 'OTP sent successfully' });
+});
+  });
+});
+
+/////////////////////////////////////
 
 // Simple get request
 app.get("/", (req, res) => {
@@ -61,8 +211,7 @@ app.post("/userdata", async (req, res) => {
         useraddress,
       });
       await newData.save();
-      console.log("New User Data Saved");
-      res.status(200).json({ message: "New User Data saved" });
+            res.status(200).json({ message: "New User Data saved" });
     }
     // Update User Address Data
   } catch (err) {
@@ -70,6 +219,7 @@ app.post("/userdata", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+console.log("New User Data Saved");
 
 //Patch request
 app.patch("/userdata/:id", async (req, res) => {
