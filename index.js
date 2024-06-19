@@ -3,7 +3,7 @@ const bodyParser = require("body-parser");
 require("dotenv").config();
 const mongoose = require("mongoose");
 const cors = require("cors");
-const http = require('http');
+const https = require('http');
 
 const fs = require('fs'); // Import fs module with promises support
 
@@ -21,7 +21,9 @@ const Order = require("./models/Order");
 const Merchantdata = require("./models/Merchant");
 const UploadedFilePath = require("./models/Pdf")
 
-// MongoDB Connection
+const FormData = require('./models/FormData');// MongoDB Connection
+
+
 mongoose.set("strictQuery", false);
 
 const connectDB = async () => {
@@ -37,15 +39,66 @@ const connectDB = async () => {
   }
 };
 
-const sendOtp = new SendOtp('408994AwofzxcxZjm26625fd0dP1');
+// Set up multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  }
+});
+const upload = multer({ storage });
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.use(cors({ origin: "*" }));
+app.use('/uploads', express.static('uploads'));
 
 
-// app.use(express.static(path.join(__dirname, 'client/build')));
+
+//Researcher data//
+
+app.post('/submit', upload.fields([{ name: 'photo' }, { name: 'photo2' }]), async (req, res) => {
+  try {
+    const formData = new FormData({
+      appSection: req.body.appSection,
+      productCategory: req.body.productCategory,
+      brand: req.body.brand,
+      title: req.body.title,
+      offerHeadline: req.body.offerHeadline,
+      description: req.body.description,
+      excerptDescription: req.body.excerptDescription,
+      photo: req.files.photo ? req.files.photo[0].path : '',
+      videoLink: req.body.videoLink,
+      photo2: req.files.photo2 ? req.files.photo2[0].path : '',
+      price: req.body.price,
+      discountedPrice: req.body.discountedPrice
+    });
+
+    await formData.save();
+    res.status(200).json({ message: 'Form data saved successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error saving form data', error: err });
+  }
+});
+
+// GET request to fetch all form data
+app.get('/formdata', async (req, res) => {
+  try {
+    const formData = await FormData.find();
+    res.status(200).json(formData);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching form data', error: err });
+  }
+});
+
+///////
+
+
+
+
 
 /////
 
@@ -113,71 +166,86 @@ app.get('/videoSize', async (req, res) => {
 });
 
 /////////////////otp////////////////////////
-
-app.post('/send-otp', (req, res) => {
+app.post("/send-otp", (req, res) => {
   const { mobileNumber } = req.body;
+  if (!mobileNumber) {
+      return res.status(400).json({ error: "Mobile number is required." });
+  }
 
-  // Replace with your actual email and password
-  const email = 'chavanswapnil822@gmail.com';
-  const password = 'Swapnil@123';
-
-  const authOptions = {
-      method: 'GET',
-      url: 'https://cpaas.messagecentral.com/auth/v1/authentication/token',
-      qs: {
-          country: 'IN',
-          customerId: 'C-E3DE6128CFE5400',
-          email: email,
-          key:password,
-          scope: 'NEW'
-      },
+  const options = {
+      method: "POST",
+      hostname: "control.msg91.com",
+      path: `/api/v5/otp?template_id=6669404cd6fc0565025c2102&mobile=${mobileNumber}&authkey=408994AbeVcmRYV66682d3bP1`,
       headers: {
-          accept: '*/*'
+          "Content-Type": "application/JSON",
       }
   };
 
-  // Make request to generate token
-  request(authOptions, (error, response, body) => {
-      if (error) {
-          console.error('Error generating token:', error);
-          res.status(500).json({ error: 'Internal Server Error' });
-          return;
-      }
+  const request = https.request(options, function (response) {
+      const chunks = [];
 
-      const tokenResponse = JSON.parse(body);
-      const token = tokenResponse.token;
+      response.on("data", function (chunk) {
+          chunks.push(chunk);
+      });
 
-      // Send OTP using the generated token
-      const otpOptions = {
-          method: 'POST',
-          url: 'https://cpaas.messagecentral.com/verification/v2/verification/send',
-          headers: {
-              'authToken': token,
-              'Content-Type': 'application/json'
-          },
-          json: true,
-          body: {
-              countryCode: '91',
-              customerId: 'C-E3DE6128CFE5400',
-              senderId: 'UTOMOB',
-              type: 'SMS',
-              flowType: 'SMS',
-              mobileNumber: mobileNumber,
-              message: 'Your OTP is: 1234' // You can customize the OTP message here
+      response.on("end", function () {
+          const body = Buffer.concat(chunks);
+          if (response.statusCode === 200) {
+              console.log("OTP sent successfully");
+              res.status(200).json({ message: "OTP sent successfully" });
+          } else {
+              console.error("Failed to send OTP");
+              res.status(response.statusCode).json({ error: "Failed to send OTP" });
           }
-      };
-
-    // Make request to send OTP
-request(otpOptions, (error, response, body) => {
-  if (error) {
-      console.error('Error sending OTP:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-      return;
-  }
-  console.log('OTP sent successfully:', body); // Log the response body
-  res.json({ message: 'OTP sent successfully' });
-});
+      });
   });
+
+  request.on("error", function (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal server error." });
+  });
+
+  request.end();
+});
+
+
+//////verify otp/////
+
+app.post("/verify-otp", (req, res) => {
+  const { otp, mobileNumber } = req.body;
+  if (!otp || !mobileNumber) {
+      return res.status(400).json({ error: "OTP and mobile number are required." });
+  }
+
+  const options = {
+      method: "GET",
+      hostname: "control.msg91.com",
+      path: `/api/v5/otp/verify?otp=${otp}&mobile=${mobileNumber}`,
+      headers: {
+          "authkey": "408994AbeVcmRYV66682d3bP1"
+      }
+  };
+
+  const request = https.request(options, function (response) {
+      const chunks = [];
+
+      response.on("data", function (chunk) {
+          chunks.push(chunk);
+      });
+
+      response.on("end", function () {
+          const body = Buffer.concat(chunks);
+          console.log(body.toString()); // This would be the response from the OTP verification service
+          res.status(response.statusCode).send(body); // Send the response from the OTP verification service back to the client
+      });
+  });
+
+  request.on("error", function (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal server error." });
+  });
+
+  request.end();
 });
 
 /////////////////////////////////////
