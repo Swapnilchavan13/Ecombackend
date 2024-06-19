@@ -7,7 +7,7 @@ const https = require('http');
 
 const fs = require('fs'); // Import fs module with promises support
 
-const SendOtp = require('sendotp');
+
 const request = require('request');
 
 const app = express();
