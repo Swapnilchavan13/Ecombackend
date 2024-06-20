@@ -58,6 +58,36 @@ app.use('/uploads', express.static('uploads'));
 
 
 
+// PUT request to update form data (excluding photos)
+app.put('/update/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const updatedData = {
+      appSection: req.body.appSection,
+      productCategory: req.body.productCategory,
+      brand: req.body.brand,
+      title: req.body.title,
+      offerHeadline: req.body.offerHeadline,
+      description: req.body.description,
+      excerptDescription: req.body.excerptDescription,
+      videoLink: req.body.videoLink,
+      price: req.body.price,
+      discountedPrice: req.body.discountedPrice
+    };
+
+    const updatedFormData = await FormData.findByIdAndUpdate(id, updatedData, { new: true });
+
+    if (!updatedFormData) {
+      return res.status(404).json({ message: 'Form data not found' });
+    }
+
+    res.status(200).json({ message: 'Form data updated successfully', updatedFormData });
+  } catch (err) {
+    res.status(500).json({ message: 'Error updating form data', error: err });
+  }
+});
+
 //Researcher data//
 
 app.post('/submit', upload.fields([{ name: 'photo' }, { name: 'photo2' }]), async (req, res) => {
