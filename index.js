@@ -58,35 +58,6 @@ app.use('/uploads', express.static('uploads'));
 
 
 
-// PUT request to update form data (excluding photos)
-app.put('/update/:id', async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const updatedData = {
-      appSection: req.body.appSection,
-      productCategory: req.body.productCategory,
-      brand: req.body.brand,
-      title: req.body.title,
-      offerHeadline: req.body.offerHeadline,
-      description: req.body.description,
-      excerptDescription: req.body.excerptDescription,
-      videoLink: req.body.videoLink,
-      price: req.body.price,
-      discountedPrice: req.body.discountedPrice
-    };
-
-    const updatedFormData = await FormData.findByIdAndUpdate(id, updatedData, { new: true });
-
-    if (!updatedFormData) {
-      return res.status(404).json({ message: 'Form data not found' });
-    }
-
-    res.status(200).json({ message: 'Form data updated successfully', updatedFormData });
-  } catch (err) {
-    res.status(500).json({ message: 'Error updating form data', error: err });
-  }
-});
 
 //Researcher data//
 
@@ -123,6 +94,36 @@ app.get('/formdata', async (req, res) => {
     res.status(500).json({ message: 'Error fetching form data', error: err });
   }
 });
+
+
+////
+
+app.put('/update/:id', upload.fields([{ name: 'photo' }, { name: 'photo2' }]), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedData = {
+      appSection: req.body.appSection,
+      productCategory: req.body.productCategory,
+      brand: req.body.brand,
+      title: req.body.title,
+      offerHeadline: req.body.offerHeadline,
+      description: req.body.description,
+      excerptDescription: req.body.excerptDescription,
+      photo: req.files.photo ? req.files.photo[0].path : req.body.photo,
+      videoLink: req.body.videoLink,
+      photo2: req.files.photo2 ? req.files.photo2[0].path : req.body.photo2,
+      price: req.body.price,
+      discountedPrice: req.body.discountedPrice
+    };
+
+    const updatedFormData = await FormData.findByIdAndUpdate(id, updatedData, { new: true });
+
+    res.status(200).json({ message: 'Form data updated successfully', data: updatedFormData });
+  } catch (err) {
+    res.status(500).json({ message: 'Error updating form data', error: err });
+  }
+});
+
 
 ///////
 
