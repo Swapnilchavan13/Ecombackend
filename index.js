@@ -61,12 +61,20 @@ app.use('/uploads', express.static('uploads'));
 
 //Researcher data//
 
-app.post('/submit', upload.fields([{ name: 'photo' }, { name: 'photo2' }]), async (req, res) => {
+// Handle form submission
+app.post('/submit', upload.fields([
+  { name: 'photo' },
+  { name: 'photo2' },
+  { name: 'brandImage' },
+  { name: 'additionalPhoto1' },
+  { name: 'additionalPhoto2' }
+]), async (req, res) => {
   try {
     const formData = new FormData({
       appSection: req.body.appSection,
       productCategory: req.body.productCategory,
       brand: req.body.brand,
+      brandImage: req.files.brandImage ? req.files.brandImage[0].path : '',
       title: req.body.title,
       offerHeadline: req.body.offerHeadline,
       description: req.body.description,
@@ -74,6 +82,8 @@ app.post('/submit', upload.fields([{ name: 'photo' }, { name: 'photo2' }]), asyn
       photo: req.files.photo ? req.files.photo[0].path : '',
       videoLink: req.body.videoLink,
       photo2: req.files.photo2 ? req.files.photo2[0].path : '',
+      additionalPhoto1: req.files.additionalPhoto1 ? req.files.additionalPhoto1[0].path : '',
+      additionalPhoto2: req.files.additionalPhoto2 ? req.files.additionalPhoto2[0].path : '',
       price: req.body.price,
       discountedPrice: req.body.discountedPrice
     });
