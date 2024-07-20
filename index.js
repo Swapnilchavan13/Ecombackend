@@ -70,7 +70,31 @@ app.post('/submit', upload.fields([
   { name: 'additionalPhoto2' }
 ]), async (req, res) => {
   try {
+    // Check if user is logged in
+    if (!req.body.username) {
+      return res.status(400).json({ message: 'Username is required' });
+    }
+
+    const username = req.body.username;
+
+    // Get the current date and calculate the start of the week
+    const currentDate = new Date();
+    const startOfWeek = new Date(currentDate.setDate(currentDate.getDate() - currentDate.getDay())).setHours(0, 0, 0, 0);
+
+    // Count the number of entries by the user in the current week
+    const count = await FormData.countDocuments({
+      username: username,
+      createdAt: { $gte: new Date(startOfWeek) }
+    });
+
+    // Limit to 3 entries per week
+    if (count >= 3) {
+      return res.status(403).json({ message: 'You can only submit 3 entries per week' });
+    }
+
+    // Create a new form data entry
     const formData = new FormData({
+      username: req.body.username,
       appSection: req.body.appSection,
       productCategory: req.body.productCategory,
       brand: req.body.brand,
@@ -88,12 +112,42 @@ app.post('/submit', upload.fields([
       discountedPrice: req.body.discountedPrice
     });
 
+    // Save form data
     await formData.save();
     res.status(200).json({ message: 'Form data saved successfully' });
   } catch (err) {
     res.status(500).json({ message: 'Error saving form data', error: err });
   }
 });
+
+
+
+
+app.get('/entry-count', async (req, res) => {
+  try {
+    const username = req.query.username;
+
+    if (!username) {
+      return res.status(400).json({ message: 'Username is required' });
+    }
+
+    // Get the current date and calculate the start of the week
+    const currentDate = new Date();
+    const startOfWeek = new Date(currentDate.setDate(currentDate.getDate() - currentDate.getDay())).setHours(0, 0, 0, 0);
+
+    // Count the number of entries by the user in the current week
+    const count = await FormData.countDocuments({
+      username: username,
+      createdAt: { $gte: new Date(startOfWeek) }
+    });
+
+    res.status(200).json({ count: count });
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching entry count', error: err });
+  }
+});
+
+
 
 // GET request to fetch all form data
 app.get('/formdata', async (req, res) => {
@@ -104,6 +158,24 @@ app.get('/formdata', async (req, res) => {
     res.status(500).json({ message: 'Error fetching form data', error: err });
   }
 });
+
+
+///get by user 
+
+// GET request to count form data by username
+app.get('/formdata/count', async (req, res) => {
+  try {
+    const { username } = req.query; // Extract username from query parameters
+    if (!username) {
+      return res.status(400).json({ message: 'Username query parameter is required' });
+    }
+    const count = await FormData.countDocuments({ username });
+    res.status(200).json({ count });
+  } catch (err) {
+    res.status(500).json({ message: 'Error counting form data', error: err });
+  }
+});
+
 
 
 ////
